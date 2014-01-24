@@ -76,7 +76,7 @@
                 },
 
                 loadList: function (url, options, deferred) {
-                    options = options || {};
+                    options = options || {'cacheKey': 'url'};
                     deferred = deferred || extQ.defer(['add', 'update', 'remove']);
 
                     // Load list of item URLs from urlCache.
@@ -95,13 +95,13 @@
                     api.stream(url, options).update(function (list) {
                         // Stream the list
                         forEach(list, function (item) {
-                            seen[item.url] = item;
-                            var cached = api.objectCache.get(item.url);
+                            seen[item[options.cacheKey]] = item;
+                            var cached = api.objectCache.get(item[options.cacheKey]);
                             if (isUndefined(cached)) {
-                                api.objectCache.put(item.url, item);
+                                api.objectCache.put(item[options.cacheKey], item);
                                 deferred.add(item);
                             } else if (!equals(cached, item)) {
-                                api.objectCache.put(item.url, item);
+                                api.objectCache.put(item[options.cacheKey], item);
                                 deferred.update(item);
                             }
                         });
@@ -120,8 +120,8 @@
                         // Update the urlCache with a list of URLs.
                         var urls = [];
                         forEach(list, function (item) {
-                            if (isDefined(item.url)) {
-                                urls.push(item.url);
+                            if (isDefined(item[options.cacheKey])) {
+                                urls.push(item[options.cacheKey]);
                             }
                         });
                         api.urlCache.put(url, urls);
