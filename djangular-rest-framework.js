@@ -14,6 +14,7 @@
             };
 
             var api = {
+                defaultOptions: {'cacheKey': 'url'},
                 optionsCache: $angularCacheFactory('optionsCache', cacheOptions),
                 urlCache: $angularCacheFactory('urlCache', cacheOptions),
                 objectCache: $angularCacheFactory('objectCache', cacheOptions),
@@ -76,7 +77,7 @@
                 },
 
                 loadList: function (url, options, deferred) {
-                    options = options || {'cacheKey': 'url'};
+                    options = angular.extend({}, api.defaultOptions, options);
                     deferred = deferred || extQ.defer(['add', 'update', 'remove']);
 
                     // Load list of item URLs from urlCache.
@@ -95,13 +96,13 @@
                     api.stream(url, options).update(function (list) {
                         // Stream the list
                         forEach(list, function (item) {
-                            seen[item[options.cacheKey]] = item;
-                            var cached = api.objectCache.get(item[options.cacheKey]);
+                            seen[String(item[options.cacheKey])] = item;
+                            var cached = api.objectCache.get(String(item[options.cacheKey]));
                             if (isUndefined(cached)) {
-                                api.objectCache.put(item[options.cacheKey], item);
+                                api.objectCache.put(String(item[options.cacheKey]), item);
                                 deferred.add(item);
                             } else if (!equals(cached, item)) {
-                                api.objectCache.put(item[options.cacheKey], item);
+                                api.objectCache.put(String(item[options.cacheKey]), item);
                                 deferred.update(item);
                             }
                         });
@@ -120,8 +121,8 @@
                         // Update the urlCache with a list of URLs.
                         var urls = [];
                         forEach(list, function (item) {
-                            if (isDefined(item[options.cacheKey])) {
-                                urls.push(item[options.cacheKey]);
+                            if (isDefined(String(item[options.cacheKey]))) {
+                                urls.push(String(item[options.cacheKey]));
                             }
                         });
                         api.urlCache.put(url, urls);
